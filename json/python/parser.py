@@ -3,19 +3,33 @@
 def tokenize(contents):
     list = []
     i = 0
-    for i, c in enumerate(contents):
+    while(i != len(contents)-1):
+        c = contents[i]
+        if c == ' ' or c == '\t':
+            i += 1
+            continue
+
         if c == '{' or c == '}':
             list.append(c)
+
         if c == '"' or c == "'":
+            quotation_char = c
             word = ""
-            next = contents[i+1]
-            while(next != '"'):
-                word += next
-                i = i+1
-                next = contents[i]
-            print(word)
+
+            ## extract word between quotation
+            while True:
+                i += 1
+                word += contents[i]
+                if contents[i+1] == quotation_char:
+                    i += 1
+                    break
+
             list.append(word)
 
+        if c == ':':
+            list.append(c)
+
+        i += 1
 
     return list
 
@@ -25,7 +39,7 @@ if __name__ == '__main__':
         contents = f.read()
         #print(contents)
         list = tokenize(contents)
-        for l in list:
-            print('{}, '.format(l))
+        for i, l in enumerate(list):
+            print('#{}: {}, '.format(i, l))
 
 
