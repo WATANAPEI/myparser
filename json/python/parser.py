@@ -12,6 +12,12 @@ def tokenize(contents):
         if c == '{' or c == '}':
             list.append(c)
 
+        if c == '[' or c == ']':
+            list.append(c)
+
+        if c == ',':
+            list.append(c)
+
         if c == '"' or c == "'":
             quotation_char = c
             word = ""
@@ -40,6 +46,6 @@ if __name__ == '__main__':
         #print(contents)
         list = tokenize(contents)
         for i, l in enumerate(list):
-            print('#{}: {}, '.format(i, l))
+            print('#{}: {} '.format(i, l))
 
 
