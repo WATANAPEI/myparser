@@ -1,5 +1,6 @@
 #! /usr/bin/python3
 
+
 def tokenize(contents):
     list = []
     i = 0
@@ -22,7 +23,7 @@ def tokenize(contents):
             quotation_char = c
             word = ""
 
-            ## extract word between quotation
+            # extract word between quotation
             while True:
                 i += 1
                 word += contents[i]
@@ -43,9 +44,7 @@ def tokenize(contents):
 if __name__ == '__main__':
     with open('./test.json') as f:
         contents = f.read()
-        #print(contents)
+        # print(contents)
         list = tokenize(contents)
         for i, l in enumerate(list):
             print('#{}: {} '.format(i, l))
-
-
