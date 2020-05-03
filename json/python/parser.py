@@ -20,11 +20,11 @@ def parse_main(code: List[tokenizer.Token], idx: int):
     elif token.kind == 'OPEN_LIST':
         return parse_list(code, idx)
     elif token.kind == 'KEYWORD':
-        if token.value == 'TRUE':
+        if token.value.upper() == 'TRUE':
             return True, idx+1
-        elif token.value == 'FALSE':
+        elif token.value.upper() == 'FALSE':
             return False, idx+1
-        elif token.value == 'NULL':
+        elif token.value.upper() == 'NULL':
             return None, idx+1
     elif token.kind == 'NUMBER':
         mo = NUMBER_RE.match(token.value)
@@ -59,11 +59,13 @@ def parse_obj(code: List[tokenizer.Token], idx: int):
         next_token, idx = _get_next_token(code, idx)
         if next_token.kind not in ['NUMBER', 'OPEN_BRA', 'OPEN_LIST', 'STRING', 'KEYWORD']:
             raise Exception("value should comde after colon")
-        if next_token.kind == 'STRING':
+        elif next_token.kind == 'STRING':
             pair.append((key, next_token.value))
-        if next_token.kind in ['NUMBER', 'OPEN_BRA', 'OPEN_LIST', 'KEYWORD']:
+        elif next_token.kind in ['NUMBER', 'OPEN_BRA', 'OPEN_LIST', 'KEYWORD']:
             value, idx = parse_main(code, idx)
+            pair.append((key, next_token.value))
 
+        print(f'pair {idx}: {pair}')
         next_token, idx = _get_next_token(code, idx)
         if next_token.kind == 'CLOSE_BRA':
             break
@@ -85,19 +87,22 @@ def parse_list(code: List[tokenizer.Token], idx: int):
     while True:
         if next_token.kind not in ['NUMBER', 'OPEN_BRA', 'OPEN_LIST', 'STRING', 'KEYWORD']:
             raise Exception('value is expected')
-        if next_token.kind == 'STRING':
+        elif next_token.kind == 'STRING':
             list.append(next_token.value)
-        if next_token.kind in ['NUMBER', 'OPEN_BRA', 'OPEN_LIST', 'KEYWORD']:
+        elif next_token.kind in ['NUMBER', 'OPEN_BRA', 'OPEN_LIST', 'KEYWORD']:
             value, idx = parse_main(code, idx)
+            list.append(value)
 
-        list.append(value)
+        print(f'line {idx}: {list}')
 
         next_token, idx = _get_next_token(code, idx)
-        if next_token.value == 'CLOSE_LIST':
+        if next_token.kind == 'CLOSE_LIST':
             break
-        if next_token.kind != 'COMMA':
+        elif next_token.kind != 'COMMA':
             raise Exception('comma is expected to come')
+        else:
+            next_token, idx = _get_next_token(code, idx)
 
-    return list, idx+1
+    return list, idx
 
 
