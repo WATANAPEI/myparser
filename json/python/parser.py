@@ -1,50 +1,53 @@
-#! /usr/bin/python3
+#! /bin/usr/python3
+
+import tokenizer
+from typing import List
 
 
-def tokenize(contents):
-    list = []
-    i = 0
-    while(i != len(contents)-1):
-        c = contents[i]
-        if c == ' ' or c == '\t':
-            i += 1
-            continue
-
-        if c == '{' or c == '}':
-            list.append(c)
-
-        if c == '[' or c == ']':
-            list.append(c)
-
-        if c == ',':
-            list.append(c)
-
-        if c == '"' or c == "'":
-            quotation_char = c
-            word = ""
-
-            # extract word between quotation
-            while True:
-                i += 1
-                word += contents[i]
-                if contents[i+1] == quotation_char:
-                    i += 1
-                    break
-
-            list.append(word)
-
-        if c == ':':
-            list.append(c)
-
-        i += 1
-
-    return list
+def get_next_token(code, idx):
+    return (code[idx+1], idx + 1)
 
 
-if __name__ == '__main__':
-    with open('./test.json') as f:
-        contents = f.read()
-        # print(contents)
-        list = tokenize(contents)
-        for i, l in enumerate(list):
-            print('#{}: {} '.format(i, l))
+def parse_main(code: List[tokenizer.Token], idx: int):
+    next_token = code[idx]
+    if next_token.kind == 'OPEN_BRA':
+        return parse_obj(code, idx)
+    elif next_token.kind == 'OPEN_LIST':
+        return parse_list(code, idx)
+
+
+def parse_obj(code: List[tokenizer.Token], idx: int):
+    '''
+    Suppose current token and index(idx) point to the
+    open bracket or comma.
+    '''
+    pair = []
+    next_token, idx = get_next_token(code, idx)
+    if next_token.kind == 'CLOSE_BRA':
+        return ({}, idx+1)
+
+    while True:
+        if next_token.kind == 'STRING':
+            key = next_token.value
+        else:
+            raise Exception("key token is exptected after bracket")
+
+        next_token, idx = get_next_token(code, idx)
+        if next_token.kind != 'COLON':
+            raise Exception("colon must come after key token")
+
+        next_token, idx = get_next_token(code, idx)
+        if next_token.kind not in ['NUMBER', 'OPEN_BRA', 'OPEN_LIST', 'STRING', 'KEYWORD']:
+            raise Exception("value should comde after colon")
+        if next_token.kind in ['NUMBER', 'STRING', 'KEYWORD']:
+            pair.append((key, next_token.value))
+
+        next_token, idx = get_next_token(code, idx)
+        if next_token.kind == 'CLOSE_BRA':
+            break
+        else:
+            next_token, idx = get_next_token(code, idx)
+
+
+def parse_list(code: List[tokenizer.Token], idx: int):
+    _ = 1

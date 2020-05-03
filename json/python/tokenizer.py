@@ -3,23 +3,26 @@ import re
 
 
 class Token(NamedTuple):
-    type: str
+    kind: str
     value: str
     line: int
     column: int
 
 
 def tokenize(code):
-    keywords = {'TRUE', 'FALSE', 'NULL', 'NaN', 'Infinity', '-Infinity'}
+    keywords = {'TRUE', 'FALSE', 'NULL', }
     token_spec = [
             ('NUMBER', r'\d+(\.\d*)?'),  # FIXME: exponential
             ('OPEN_BRA', r'{'),
             ('CLOSE_BRA', r'}'),
+            ('OPEN_LIST', r'\['),
+            ('CLOSE_LIST', r'\]'),
             ('COLON', r':'),
             ('COMMA', r','),
-            ('ID', r'".+?"'),
-            ('NEWLINE', r'\n'),
-            ('SKIP', r'[ \t]+'),
+            ('STRING', r'".+?"'),
+            ('KEYWORD', r'(?![" \t\n\r]).+'),
+            ('NEWLINE', r'[\n\r]+'),
+            ('WHITESPACE', r'[ \t]+'),
             ('MISMATCH', r'.'),
             ]
     tok_regex = '|'.join('(?P<%s>%s)' % pair for pair in token_spec)
@@ -31,11 +34,15 @@ def tokenize(code):
         column = mo.start() - line_start
         if kind == 'NUMBER':
             value = float(value) if '.' in value else int(value)
-        elif kind == 'ID' and value in keywords:
-            kind = value
+        elif kind == 'STRING':
+            value = value.strip('"')  # strip double quote
+        elif kind == 'KEYWORD' and value.upper() in keywords:
+            kind = 'KEYWORD'
         elif kind == 'NEWLINE':
             line_start = mo.end()
             line_num += 1
+            continue
+        elif kind == 'WHITESPACE':
             continue
         elif kind == 'MISMATCH':
             raise RuntimeError(f'{value!r} unexpected on line {line_num}')

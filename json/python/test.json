@@ -40,6 +40,7 @@
       "firstName": "Dan",
       "lastName": "Gebhardt",
       "twitter": "dgeb"
+      "isActive": false
     },
     "links": {
       "self": "http://example.com/people/9"
