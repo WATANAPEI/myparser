@@ -2,18 +2,38 @@
 
 import tokenizer
 from typing import List
+import re
+
+NUMBER_RE = re.compile(
+    r'(-?(?:0|[1-9]\d*))(\.\d+)?([eE][-+]?\d+)?',
+    (re.VERBOSE | re.MULTILINE | re.DOTALL))
 
 
-def get_next_token(code, idx):
+def _get_next_token(code, idx):
     return (code[idx+1], idx + 1)
 
 
 def parse_main(code: List[tokenizer.Token], idx: int):
-    next_token = code[idx]
-    if next_token.kind == 'OPEN_BRA':
+    token = code[idx]
+    if token.kind == 'OPEN_BRA':
         return parse_obj(code, idx)
-    elif next_token.kind == 'OPEN_LIST':
+    elif token.kind == 'OPEN_LIST':
         return parse_list(code, idx)
+    elif token.kind == 'KEYWORD':
+        if token.value == 'TRUE':
+            return True, idx+1
+        elif token.value == 'FALSE':
+            return False, idx+1
+        elif token.value == 'NULL':
+            return None, idx+1
+    elif token.kind == 'NUMBER':
+        mo = NUMBER_RE.match(token.value)
+        if mo is not None:
+            integer, fruction, exp = mo.groups()
+            if fruction is None and exp is None:
+                return int(integer), idx+1
+            else:
+                return float(mo.group()), idx+1
 
 
 def parse_obj(code: List[tokenizer.Token], idx: int):
@@ -22,7 +42,7 @@ def parse_obj(code: List[tokenizer.Token], idx: int):
     open bracket or comma.
     '''
     pair = []
-    next_token, idx = get_next_token(code, idx)
+    next_token, idx = _get_next_token(code, idx)
     if next_token.kind == 'CLOSE_BRA':
         return ({}, idx+1)
 
@@ -32,22 +52,52 @@ def parse_obj(code: List[tokenizer.Token], idx: int):
         else:
             raise Exception("key token is exptected after bracket")
 
-        next_token, idx = get_next_token(code, idx)
+        next_token, idx = _get_next_token(code, idx)
         if next_token.kind != 'COLON':
             raise Exception("colon must come after key token")
 
-        next_token, idx = get_next_token(code, idx)
+        next_token, idx = _get_next_token(code, idx)
         if next_token.kind not in ['NUMBER', 'OPEN_BRA', 'OPEN_LIST', 'STRING', 'KEYWORD']:
             raise Exception("value should comde after colon")
-        if next_token.kind in ['NUMBER', 'STRING', 'KEYWORD']:
+        if next_token.kind == 'STRING':
             pair.append((key, next_token.value))
+        if next_token.kind in ['NUMBER', 'OPEN_BRA', 'OPEN_LIST', 'KEYWORD']:
+            value, idx = parse_main(code, idx)
 
-        next_token, idx = get_next_token(code, idx)
+        next_token, idx = _get_next_token(code, idx)
         if next_token.kind == 'CLOSE_BRA':
             break
+        elif next_token.kind != 'COMMA':
+            raise Exception('comma is expected after value token')
         else:
-            next_token, idx = get_next_token(code, idx)
+            # next token = string token(key)
+            next_token, idx = _get_next_token(code, idx)
+
+    pairs = dict(pair)
+    return pairs, idx+1
 
 
 def parse_list(code: List[tokenizer.Token], idx: int):
-    _ = 1
+    next_token, idx = _get_next_token(code, idx)
+    list = []
+    if next_token.kind == 'CLOSE_LIST':
+        return list, idx+1
+    while True:
+        if next_token.kind not in ['NUMBER', 'OPEN_BRA', 'OPEN_LIST', 'STRING', 'KEYWORD']:
+            raise Exception('value is expected')
+        if next_token.kind == 'STRING':
+            list.append(next_token.value)
+        if next_token.kind in ['NUMBER', 'OPEN_BRA', 'OPEN_LIST', 'KEYWORD']:
+            value, idx = parse_main(code, idx)
+
+        list.append(value)
+
+        next_token, idx = _get_next_token(code, idx)
+        if next_token.value == 'CLOSE_LIST':
+            break
+        if next_token.kind != 'COMMA':
+            raise Exception('comma is expected to come')
+
+    return list, idx+1
+
+

@@ -12,7 +12,7 @@ class Token(NamedTuple):
 def tokenize(code):
     keywords = {'TRUE', 'FALSE', 'NULL', }
     token_spec = [
-            ('NUMBER', r'\d+(\.\d*)?'),  # FIXME: exponential
+            ('NUMBER', r'(-?(?:0|[1-9]\d*))(\.\d+)?([eE][-+]?\d+)?'),
             ('OPEN_BRA', r'{'),
             ('CLOSE_BRA', r'}'),
             ('OPEN_LIST', r'\['),

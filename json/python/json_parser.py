@@ -52,3 +52,5 @@ if __name__ == '__main__':
         # for i, l in enumerate(list):
         #     print('#{}: {} '.format(i, l))
         obj = parser.parse_main(list, 0)
+        print(obj)
+
