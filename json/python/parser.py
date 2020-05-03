@@ -74,7 +74,7 @@ def parse_obj(code: List[tokenizer.Token], idx: int):
             next_token, idx = _get_next_token(code, idx)
 
     pairs = dict(pair)
-    return pairs, idx+1
+    return pairs, idx
 
 
 def parse_list(code: List[tokenizer.Token], idx: int):

@@ -1,4 +1,4 @@
-from typing import NamedTuple
+from typing import NamedTuple, List
 import re
 
 
@@ -9,7 +9,7 @@ class Token(NamedTuple):
     column: int
 
 
-def tokenize(code):
+def tokenize(code: str) -> List[Token]:
     keywords = {'TRUE', 'FALSE', 'NULL', }
     token_spec = [
             ('NUMBER', r'(-?(?:0|[1-9]\d*))(\.\d+)?([eE][-+]?\d+)?'),
@@ -28,6 +28,7 @@ def tokenize(code):
     tok_regex = '|'.join('(?P<%s>%s)' % pair for pair in token_spec)
     line_num = 1
     line_start = 0
+    token_list = []
     for mo in re.finditer(tok_regex, code):
         kind = mo.lastgroup
         value = mo.group()
@@ -46,7 +47,9 @@ def tokenize(code):
             continue
         elif kind == 'MISMATCH':
             raise RuntimeError(f'{value!r} unexpected on line {line_num}')
-        yield Token(kind, value, line_num, column)
+        token_list.append(Token(kind, value, line_num, column))
+
+    return token_list
 
 
 if __name__ == '__main__':

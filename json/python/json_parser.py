@@ -44,7 +44,7 @@ def tokenize_orig(contents):
     return list
 
 
-if __name__ == '__main__':
+def main():
     with open('./test.json') as f:
         contents = f.read()
         # print(contents)
@@ -54,3 +54,14 @@ if __name__ == '__main__':
         obj = parser.parse_main(list, 0)
         print(obj)
 
+
+def check_token():
+    with open('./test.json') as f:
+        contents = f.read()
+        list: List[tokenizer.Token] = tokenizer.tokenize(contents)
+        for i, l in enumerate(list):
+            print('#{}: {} '.format(i, l))
+
+
+if __name__ == '__main__':
+    main()
