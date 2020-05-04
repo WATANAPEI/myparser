@@ -21,11 +21,11 @@ def parse_main(code: List[tokenizer.Token], idx: int):
         return parse_list(code, idx)
     elif token.kind == 'KEYWORD':
         if token.value.upper() == 'TRUE':
-            return True, idx+1
+            return True, idx
         elif token.value.upper() == 'FALSE':
-            return False, idx+1
+            return False, idx
         elif token.value.upper() == 'NULL':
-            return None, idx+1
+            return None, idx
     elif token.kind == 'NUMBER':
         mo = NUMBER_RE.match(token.value)
         if mo is not None:
@@ -63,16 +63,15 @@ def parse_obj(code: List[tokenizer.Token], idx: int):
             pair.append((key, next_token.value))
         elif next_token.kind in ['NUMBER', 'OPEN_BRA', 'OPEN_LIST', 'KEYWORD']:
             value, idx = parse_main(code, idx)
-            pair.append((key, next_token.value))
+            pair.append((key, value))
 
-        print(f'pair {idx}: {pair}')
         next_token, idx = _get_next_token(code, idx)
         if next_token.kind == 'CLOSE_BRA':
             break
         elif next_token.kind != 'COMMA':
             raise Exception('comma is expected after value token')
         else:
-            # next token = string token(key)
+            # next token is string token(key)
             next_token, idx = _get_next_token(code, idx)
 
     pairs = dict(pair)
@@ -92,8 +91,6 @@ def parse_list(code: List[tokenizer.Token], idx: int):
         elif next_token.kind in ['NUMBER', 'OPEN_BRA', 'OPEN_LIST', 'KEYWORD']:
             value, idx = parse_main(code, idx)
             list.append(value)
-
-        print(f'line {idx}: {list}')
 
         next_token, idx = _get_next_token(code, idx)
         if next_token.kind == 'CLOSE_LIST':
