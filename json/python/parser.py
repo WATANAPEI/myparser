@@ -27,13 +27,13 @@ def parse_main(code: List[tokenizer.Token], idx: int):
         elif token.value.upper() == 'NULL':
             return None, idx
     elif token.kind == 'NUMBER':
-        mo = NUMBER_RE.match(token.value)
+        mo = NUMBER_RE.match('' + str(token.value))
         if mo is not None:
             integer, fruction, exp = mo.groups()
             if fruction is None and exp is None:
-                return int(integer), idx+1
+                return int(integer), idx
             else:
-                return float(mo.group()), idx+1
+                return float(mo.group()), idx
 
 
 def parse_obj(code: List[tokenizer.Token], idx: int):
